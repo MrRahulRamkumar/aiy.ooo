@@ -8,7 +8,6 @@ export default async function handler(req: NextRequest, res: NextResponse) {
   }
 
   const slug = req.nextUrl.pathname.split("/").pop();
-
   if (!slug || typeof slug !== "string") {
     return;
   }

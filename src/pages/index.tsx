@@ -6,9 +6,16 @@ import { Button } from "@/components/ui/button";
 
 import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+
+type Form = {
+  slug: string;
+  url: string;
+};
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
+  const [form, setForm] = useState<Form>({ slug: "", url: "" });
 
   return (
     <>
@@ -24,8 +31,21 @@ const Home: NextPage = () => {
         <p className="leading-7 [&:not(:first-child)]:mt-2">
           A blazingly fast link shortener
         </p>
+        <div className="mt-6 grid w-full max-w-sm items-center gap-1.5">
+          <p className="text-sm text-muted-foreground">{`https://aiy.ooo/${form.slug}`}</p>
+          <Input
+            onChange={(e) => {
+              setForm({
+                ...form,
+                slug: e.target.value.toLowerCase(),
+              });
+            }}
+            type="text"
+            id="text"
+          />
+        </div>
         <div className="mt-6 flex w-full max-w-sm items-center space-x-2">
-          <Input type="text" placeholder="https://bing.com" />
+          <Input type="url" id="input" placeholder="https://bing.com" />
           <Button type="submit">Create</Button>
         </div>
       </main>

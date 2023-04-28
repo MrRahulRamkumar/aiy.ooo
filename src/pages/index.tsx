@@ -32,14 +32,14 @@ const LoginAlert: React.FC<{
             setLoading(true);
             void signIn("google");
           }}
-          className="mt-6 w-full"
+          className="w-full"
         >
           <Mail className="mr-2 h-4 w-4" />
           Login with Google
         </Button>
       )}
       {loading && (
-        <Button className="mt-6 w-full" disabled>
+        <Button className="w-full" disabled>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Please wait
         </Button>

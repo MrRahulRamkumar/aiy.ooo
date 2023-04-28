@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/planetscale-serverless";
 import { connect } from "@planetscale/database";
-import { InferModel } from "drizzle-orm";
+import type { InferModel } from "drizzle-orm";
 import { varchar, mysqlTable, timestamp } from "drizzle-orm/mysql-core";
 
 export const shortLink = mysqlTable("ShortLink", {

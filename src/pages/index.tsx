@@ -7,15 +7,6 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Mail } from "lucide-react";
 import { Loader2 } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { Label } from "@radix-ui/react-label";
 
 type Form = {
   slug: string;
@@ -39,7 +30,7 @@ const LoginAlert: React.FC<{
         <Button
           onClick={() => {
             setLoading(true);
-            signIn("google");
+            void signIn("google");
           }}
           className="mt-6 w-full"
         >
@@ -57,17 +48,11 @@ const LoginAlert: React.FC<{
   );
 };
 
-const UserAlert: React.FC<{ name: string | null | undefined }> = ({ name }) => {
-  let title = "Hey yoo!";
-  if (name) {
-    const firstName = name.split(" ")[0];
-    title = `Yoo ${firstName}!`;
-  }
-
+const UserAlert = () => {
   return (
     <div className="mt-12 grid w-full max-w-sm items-center gap-3">
       <Button>View your Links</Button>
-      <Button variant="ghost" onClick={() => signOut()}>
+      <Button variant="ghost" onClick={() => void signOut()}>
         Sign Out
       </Button>
     </div>
@@ -115,7 +100,7 @@ const Home: NextPage = () => {
         {!sessionData && (
           <LoginAlert loading={loading} setLoading={setLoading} />
         )}
-        {sessionData && <UserAlert name={sessionData.user.name} />}
+        {sessionData && <UserAlert />}
       </main>
     </>
   );

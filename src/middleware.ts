@@ -1,8 +1,9 @@
 import { db, shortLink } from "@/server/drizzleDb";
 import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default async function handler(req: NextRequest, res: NextResponse) {
+export default async function handler(req: NextRequest) {
   if (req.nextUrl.pathname === "/") {
     return;
   }

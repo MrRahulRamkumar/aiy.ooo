@@ -8,6 +8,8 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { Mail } from "lucide-react";
 import { Loader2, Check } from "lucide-react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 type Form = {
   slug: string;
@@ -15,7 +17,7 @@ type Form = {
 };
 
 const Home: NextPage = () => {
-  // const { toast } = useToast();
+  const { toast } = useToast();
   const { status } = useSession();
   const [form, setForm] = useState<Form>({ slug: "", url: "" });
   const [loginLoading, setLoginLoading] = useState(false);
@@ -28,11 +30,11 @@ const Home: NextPage = () => {
 
         const shortUrl = `https://aiy.ooo/${createdLink.slug}`;
         await navigator.clipboard.writeText(shortUrl);
-        // toast({
-        //   title: "Hey yoo!",
-        //   description: "Link copied to clipboard!",
-        //   action: <ToastAction altText="Okay">Okay</ToastAction>,
-        // });
+        toast({
+          title: "Hey yoo!",
+          description: "Link copied to clipboard!",
+          action: <ToastAction altText="Okay">Okay</ToastAction>,
+        });
         setLinkCreated(true);
         setTimeout(() => {
           setLinkCreated(false);
@@ -40,12 +42,12 @@ const Home: NextPage = () => {
         setForm({ slug: "", url: "" });
       },
       onError: () => {
-        // toast({
-        //   variant: "destructive",
-        //   title: "aiyooo! Something went wrong.",
-        //   description: "There was a problem with your request.",
-        //   action: <ToastAction altText="Try again">Try again</ToastAction>,
-        // });
+        toast({
+          variant: "destructive",
+          title: "aiyooo!",
+          description: "There was a problem with your request.",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        });
         setForm({ slug: "", url: "" });
       },
     });

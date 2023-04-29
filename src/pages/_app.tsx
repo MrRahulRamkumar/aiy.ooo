@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { Poppins } from "next/font/google";
 import { api } from "@/lib/api";
 import "@/styles/globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 const poppins = Poppins({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -19,7 +20,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <main className={poppins.className}>
         <Component {...pageProps} />
-        {/* <Toaster /> */}
+        <Toaster />
       </main>
     </SessionProvider>
   );

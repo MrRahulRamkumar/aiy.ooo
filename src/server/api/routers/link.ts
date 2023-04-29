@@ -64,11 +64,13 @@ export const linkRouter = createTRPCRouter({
         }
       }
 
+      const slug = input.slug || generateSlug();
+      console.log("slug", slug);
       const newShortLink: ShortLinkInsert = {
         id,
         url: input.url,
         userId: ctx.session.user.id,
-        slug: input.slug ?? generateSlug(),
+        slug,
       };
 
       await ctx.db.insert(shortLink).values(newShortLink);

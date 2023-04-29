@@ -174,7 +174,7 @@ const Home: NextPage = () => {
         )}
         {status === "authenticated" && (
           <div className="mt-12 grid w-full max-w-sm items-center gap-3">
-            <Button>View your Links</Button>
+            {/* <Button>View your Links</Button> */}
             {!loginLoading && (
               <Button
                 variant="ghost"

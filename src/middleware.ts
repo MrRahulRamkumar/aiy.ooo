@@ -37,7 +37,6 @@ export default async function handler(
   }
 
   const split = request.nextUrl.pathname.split("/");
-  console.log("split", split);
   if (request.nextUrl.pathname === "/" || split[1] === "api") {
     return;
   }

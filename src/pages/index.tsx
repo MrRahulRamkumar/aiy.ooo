@@ -6,63 +6,49 @@ import React, { useState } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Mail } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
+import { api } from "@/lib/api";
 
 type Form = {
   slug: string;
   url: string;
 };
 
-const LoginAlert: React.FC<{
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
-}> = ({ loading, setLoading }) => {
-  return (
-    <div className="mt-12 grid w-full max-w-sm items-center gap-3">
-      <Alert>
-        <AlertTitle>Hey yoo!</AlertTitle>
-        <AlertDescription>
-          If you login, you can create and edit your links with custom slugs and
-          more!
-        </AlertDescription>
-      </Alert>
-      {!loading && (
-        <Button
-          onClick={() => {
-            setLoading(true);
-            void signIn("google");
-          }}
-          className="w-full"
-        >
-          <Mail className="mr-2 h-4 w-4" />
-          Login with Google
-        </Button>
-      )}
-      {loading && (
-        <Button className="w-full" disabled>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Please wait
-        </Button>
-      )}
-    </div>
-  );
-};
-
-const UserAlert = () => {
-  return (
-    <div className="mt-12 grid w-full max-w-sm items-center gap-3">
-      <Button>View your Links</Button>
-      <Button variant="ghost" onClick={() => void signOut()}>
-        Sign Out
-      </Button>
-    </div>
-  );
-};
-
 const Home: NextPage = () => {
-  const { data: sessionData } = useSession();
+  // const { toast } = useToast();
+  const { status } = useSession();
   const [form, setForm] = useState<Form>({ slug: "", url: "" });
-  const [loading, setLoading] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [linkCreated, setLinkCreated] = useState(false);
+
+  const { mutate: createLink, isLoading: createLinkLoading } =
+    api.link.createLink.useMutation({
+      onSuccess: async (createdLink) => {
+        if (!createdLink) return;
+
+        const shortUrl = `https://aiy.ooo/${createdLink.slug}`;
+        await navigator.clipboard.writeText(shortUrl);
+        // toast({
+        //   title: "Hey yoo!",
+        //   description: "Link copied to clipboard!",
+        //   action: <ToastAction altText="Okay">Okay</ToastAction>,
+        // });
+        setLinkCreated(true);
+        setTimeout(() => {
+          setLinkCreated(false);
+        }, 2000);
+        setForm({ slug: "", url: "" });
+      },
+      onError: () => {
+        // toast({
+        //   variant: "destructive",
+        //   title: "aiyooo! Something went wrong.",
+        //   description: "There was a problem with your request.",
+        //   action: <ToastAction altText="Try again">Try again</ToastAction>,
+        // });
+        setForm({ slug: "", url: "" });
+      },
+    });
 
   return (
     <>
@@ -78,7 +64,10 @@ const Home: NextPage = () => {
         <p className="leading-7 [&:not(:first-child)]:mt-2">
           A blazingly fast link shortener
         </p>
-        {sessionData && (
+        {status === "loading" && (
+          <Loader2 className="mr-2 mt-4 h-8 w-8 animate-spin" />
+        )}
+        {status === "authenticated" && (
           <div className="mt-6 grid w-full max-w-sm items-center gap-1.5">
             <p className="text-sm text-muted-foreground">{`https://aiy.ooo/${form.slug}`}</p>
             <Input
@@ -88,19 +77,94 @@ const Home: NextPage = () => {
                   slug: e.target.value.toLowerCase(),
                 });
               }}
+              value={form.slug}
               type="text"
               id="text"
             />
           </div>
         )}
-        <div className="mt-6 flex w-full max-w-sm items-center space-x-2">
-          <Input type="url" id="input" placeholder="https://bing.com" />
-          <Button type="submit">Create</Button>
-        </div>
-        {!sessionData && (
-          <LoginAlert loading={loading} setLoading={setLoading} />
+        {status !== "loading" && (
+          <div className="mt-6 flex w-full max-w-sm items-center space-x-2">
+            <Input
+              onChange={(e) => {
+                setForm({
+                  ...form,
+                  url: e.target.value.toLowerCase(),
+                });
+              }}
+              type="url"
+              id="input"
+              value={form.url}
+              placeholder="https://bing.com"
+            />
+            <Button
+              disabled={createLinkLoading || linkCreated}
+              onClick={() => {
+                console.log(form);
+                if (status === "unauthenticated") {
+                  createLink(form);
+                }
+              }}
+            >
+              {createLinkLoading && (
+                <Loader2 className="mx-4 h-4 w-4 animate-spin" />
+              )}
+              {linkCreated && <Check className="mx-4 h-4 w-4" />}
+              {createLinkLoading || linkCreated ? "" : "Create"}
+            </Button>
+          </div>
         )}
-        {sessionData && <UserAlert />}
+        {status === "unauthenticated" && (
+          <div className="mt-12 grid w-full max-w-sm items-center gap-3">
+            <Alert>
+              <AlertTitle>Hey yoo!</AlertTitle>
+              <AlertDescription>
+                If you login, you can create and edit your links with custom
+                slugs and more!
+              </AlertDescription>
+            </Alert>
+            {!loginLoading && (
+              <Button
+                onClick={() => {
+                  setLoginLoading(true);
+                  void signIn("google");
+                }}
+                className="w-full"
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Login with Google
+              </Button>
+            )}
+            {loginLoading && (
+              <Button className="w-full" disabled>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            )}
+          </div>
+        )}
+        {status === "authenticated" && (
+          <div className="mt-12 grid w-full max-w-sm items-center gap-3">
+            <Button>View your Links</Button>
+            {!loginLoading && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setLoginLoading(true);
+                  void signOut();
+                }}
+              >
+                Sign Out
+              </Button>
+            )}
+            {loginLoading && (
+              <Button variant="ghost" className="w-full" disabled>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            )}
+          </div>
+        )}
       </main>
     </>
   );

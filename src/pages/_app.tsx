@@ -2,9 +2,7 @@ import { type AppType } from "next/app";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { Poppins } from "next/font/google";
-
 import { api } from "@/lib/api";
-
 import "@/styles/globals.css";
 
 const poppins = Poppins({
@@ -21,6 +19,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <main className={poppins.className}>
         <Component {...pageProps} />
+        {/* <Toaster /> */}
       </main>
     </SessionProvider>
   );

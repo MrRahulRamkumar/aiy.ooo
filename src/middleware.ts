@@ -1,14 +1,48 @@
 import { db, shortLink } from "@/server/drizzleDb";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextRequest, NextFetchEvent } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-export default async function handler(req: NextRequest) {
-  if (req.nextUrl.pathname === "/") {
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.cachedFixedWindow(10, "10s"),
+  ephemeralCache: new Map(),
+  analytics: true,
+});
+
+export default async function handler(
+  request: NextRequest,
+  event: NextFetchEvent
+) {
+  if (
+    request.nextUrl.pathname === "/api/trpc/link.createLink" ||
+    request.nextUrl.pathname === "/api/trpc/link.createLinkWithSlug"
+  ) {
+    const ip = request.ip ?? "127.0.0.1";
+
+    const { success, pending, limit, reset, remaining } = await ratelimit.limit(
+      `ratelimit_middleware_${ip}`
+    );
+    event.waitUntil(pending);
+
+    if (!success) {
+      const res = NextResponse.redirect(new URL("/api/blocked", request.url));
+      res.headers.set("X-RateLimit-Limit", limit.toString());
+      res.headers.set("X-RateLimit-Remaining", remaining.toString());
+      res.headers.set("X-RateLimit-Reset", reset.toString());
+      return res;
+    }
+  }
+
+  const split = request.nextUrl.pathname.split("/");
+  console.log("split", split);
+  if (request.nextUrl.pathname === "/" || split[1] === "api") {
     return;
   }
 
-  const slug = req.nextUrl.pathname.split("/").pop();
+  const slug = split.pop();
   if (!slug || typeof slug !== "string") {
     return;
   }
@@ -19,7 +53,7 @@ export default async function handler(req: NextRequest) {
     .where(eq(shortLink.slug, slug));
 
   if (!data) {
-    return NextResponse.redirect(req.nextUrl.origin);
+    return NextResponse.redirect(request.nextUrl.origin);
   }
 
   return NextResponse.redirect(data.url);
@@ -34,6 +68,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

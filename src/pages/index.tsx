@@ -45,7 +45,11 @@ const Home: NextPage = () => {
 
   const onError = (error: { message: string | undefined }) => {
     let description = "Something went wrong";
-    if (error.message && typeof error.message === "string") {
+    if (
+      error.message &&
+      typeof error.message === "string" &&
+      error.message !== "Unexpected end of JSON input"
+    ) {
       description = error.message;
     }
     toast({

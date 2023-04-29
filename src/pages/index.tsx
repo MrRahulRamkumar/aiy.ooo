@@ -10,6 +10,8 @@ import { Loader2, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { ShortLink } from "@/server/drizzleDb";
+import { TRPCClientError } from "@trpc/client";
 
 type Form = {
   slug: string;
@@ -20,36 +22,48 @@ const Home: NextPage = () => {
   const { toast } = useToast();
   const { status } = useSession();
   const [form, setForm] = useState<Form>({ slug: "", url: "" });
+  const [createLinkLoading, setCreateLinkLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [linkCreated, setLinkCreated] = useState(false);
 
-  const { mutate: createLink, isLoading: createLinkLoading } =
-    api.link.createLink.useMutation({
-      onSuccess: async (createdLink) => {
-        if (!createdLink) return;
+  const onSuccess = async (createdLink: ShortLink | undefined) => {
+    if (!createdLink) return;
 
-        const shortUrl = `https://aiy.ooo/${createdLink.slug}`;
-        await navigator.clipboard.writeText(shortUrl);
-        toast({
-          title: "Hey yoo!",
-          description: "Link copied to clipboard!",
-          action: <ToastAction altText="Okay">Okay</ToastAction>,
-        });
-        setLinkCreated(true);
-        setTimeout(() => {
-          setLinkCreated(false);
-        }, 2000);
-        setForm({ slug: "", url: "" });
-      },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "aiyooo!",
-          description: "There was a problem with your request.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        });
-        setForm({ slug: "", url: "" });
-      },
+    const shortUrl = `https://aiy.ooo/${createdLink.slug}`;
+    await navigator.clipboard.writeText(shortUrl);
+    toast({
+      title: "Hey yoo!",
+      description: "Link copied to clipboard!",
+      action: <ToastAction altText="Okay">Okay</ToastAction>,
+    });
+    setCreateLinkLoading(false);
+    setLinkCreated(true);
+    setTimeout(() => {
+      setLinkCreated(false);
+    }, 2000);
+    setForm({ slug: "", url: "" });
+  };
+
+  const onError = (error: any) => {
+    console.error(error);
+    toast({
+      variant: "destructive",
+      title: "aiyooo!",
+      description: error.message,
+      action: <ToastAction altText="Try again">Okay</ToastAction>,
+    });
+    setCreateLinkLoading(false);
+  };
+
+  const { mutate: createLink } = api.link.createLink.useMutation({
+    onSuccess: onSuccess,
+    onError: onError,
+  });
+
+  const { mutate: createLinkWithSlug } =
+    api.link.createLinkWithSlug.useMutation({
+      onSuccess: onSuccess,
+      onError: onError,
     });
 
   return (
@@ -69,53 +83,60 @@ const Home: NextPage = () => {
         {status === "loading" && (
           <Loader2 className="mr-2 mt-4 h-8 w-8 animate-spin" />
         )}
-        {status === "authenticated" && (
-          <div className="mt-6 grid w-full max-w-sm items-center gap-1.5">
-            <p className="text-sm text-muted-foreground">{`https://aiy.ooo/${form.slug}`}</p>
-            <Input
-              onChange={(e) => {
-                setForm({
-                  ...form,
-                  slug: e.target.value.toLowerCase(),
-                });
-              }}
-              value={form.slug}
-              type="text"
-              id="text"
-            />
-          </div>
-        )}
-        {status !== "loading" && (
-          <div className="mt-6 flex w-full max-w-sm items-center space-x-2">
-            <Input
-              onChange={(e) => {
-                setForm({
-                  ...form,
-                  url: e.target.value.toLowerCase(),
-                });
-              }}
-              type="url"
-              id="input"
-              value={form.url}
-              placeholder="https://bing.com"
-            />
-            <Button
-              disabled={createLinkLoading || linkCreated}
-              onClick={() => {
-                console.log(form);
-                if (status === "unauthenticated") {
-                  createLink(form);
-                }
-              }}
-            >
-              {createLinkLoading && (
-                <Loader2 className="mx-4 h-4 w-4 animate-spin" />
-              )}
-              {linkCreated && <Check className="mx-4 h-4 w-4" />}
-              {createLinkLoading || linkCreated ? "" : "Create"}
-            </Button>
-          </div>
-        )}
+        <form
+          className="flex w-full flex-col items-center justify-center"
+          onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            if (status === "authenticated") {
+              setCreateLinkLoading(true);
+              createLinkWithSlug(form);
+            } else {
+              setCreateLinkLoading(true);
+              createLink(form);
+            }
+          }}
+        >
+          {status === "authenticated" && (
+            <div className="mt-6 grid w-full max-w-sm items-center gap-1.5">
+              <p className="text-sm text-muted-foreground">{`https://aiy.ooo/${form.slug}`}</p>
+              <Input
+                onChange={(e) => {
+                  setForm({
+                    ...form,
+                    slug: e.target.value.toLowerCase(),
+                  });
+                }}
+                value={form.slug}
+                type="text"
+                id="text"
+              />
+            </div>
+          )}
+          {status !== "loading" && (
+            <div className="mt-6 flex w-full max-w-sm items-center space-x-2">
+              <Input
+                onChange={(e) => {
+                  setForm({
+                    ...form,
+                    url: e.target.value.toLowerCase(),
+                  });
+                }}
+                type="url"
+                id="input"
+                required
+                value={form.url}
+                placeholder="https://bing.com"
+              />
+              <Button type="submit" disabled={createLinkLoading || linkCreated}>
+                {createLinkLoading && (
+                  <Loader2 className="mx-4 h-4 w-4 animate-spin" />
+                )}
+                {linkCreated && <Check className="mx-4 h-4 w-4" />}
+                {createLinkLoading || linkCreated ? "" : "Create"}
+              </Button>
+            </div>
+          )}
+        </form>
         {status === "unauthenticated" && (
           <div className="mt-12 grid w-full max-w-sm items-center gap-3">
             <Alert>

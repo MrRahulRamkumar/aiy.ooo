@@ -23,10 +23,6 @@ export const shortLink = mysqlTable("ShortLink", {
 export type ShortLink = InferModel<typeof shortLink>;
 export type ShortLinkInsert = InferModel<typeof shortLink, "insert">;
 
-console.log(env.DATABASE_HOST);
-console.log(env.DATABASE_USERNAME);
-console.log(env.DATABASE_PASSWORD);
-
 // create the connection
 const connection = connect({
   host: process.env["DATABASE_HOST"],

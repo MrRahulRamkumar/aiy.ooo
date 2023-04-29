@@ -10,8 +10,7 @@ import { Loader2, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { ShortLink } from "@/server/drizzleDb";
-import { TRPCClientError } from "@trpc/client";
+import type { ShortLink } from "@/server/drizzleDb";
 
 type Form = {
   slug: string;
@@ -44,13 +43,16 @@ const Home: NextPage = () => {
     setForm({ slug: "", url: "" });
   };
 
-  const onError = (error: any) => {
-    console.error(error);
+  const onError = (error: { message: string | undefined }) => {
+    let description = "Something went wrong";
+    if (error.message && typeof error.message === "string") {
+      description = error.message;
+    }
     toast({
       variant: "destructive",
       title: "aiyooo!",
-      description: error.message,
-      action: <ToastAction altText="Try again">Okay</ToastAction>,
+      description,
+      action: <ToastAction altText="Okay">Okay</ToastAction>,
     });
     setCreateLinkLoading(false);
   };

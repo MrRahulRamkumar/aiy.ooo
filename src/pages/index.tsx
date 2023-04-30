@@ -5,22 +5,23 @@ import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { Mail, Sheet } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Loader2, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import type { ShortLink } from "@/server/drizzleDb";
-import { Separator } from "@/components/ui/separator";
 import {
-  SheetTrigger,
+  Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
-import { Label } from "@/components/ui/label";
+import { Label } from "@radix-ui/react-label";
+import { Separator } from "@radix-ui/react-separator";
 
 type Form = {
   slug: string;
@@ -74,11 +75,7 @@ const Home: NextPage = () => {
 
   const onError = (error: { message: string | undefined }) => {
     let description = "Something went wrong";
-    if (
-      error.message &&
-      typeof error.message === "string" &&
-      error.message !== "Unexpected end of JSON input"
-    ) {
+    if (error.message && typeof error.message === "string") {
       description = error.message;
     }
     toast({
@@ -205,38 +202,14 @@ const Home: NextPage = () => {
           <div className="mt-12 grid w-full max-w-sm items-center gap-3">
             <Sheet>
               <SheetTrigger asChild>
-                <Button>Open sheet</Button>
+                <Button>View your Links</Button>
               </SheetTrigger>
               <SheetContent position="bottom" size="xl">
                 <SheetHeader>
-                  <SheetTitle>Edit profile</SheetTitle>
-                  <SheetDescription>
-                    Make changes to your profile here. Click save when you're
-                    done.
-                  </SheetDescription>
+                  <SheetTitle>Your links</SheetTitle>
+                  <SheetDescription>View and edit your links</SheetDescription>
                 </SheetHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Name
-                    </Label>
-                    <Input
-                      id="name"
-                      value="Pedro Duarte"
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="username" className="text-right">
-                      Username
-                    </Label>
-                    <Input
-                      id="username"
-                      value="@peduarte"
-                      className="col-span-3"
-                    />
-                  </div>
-                </div>
+                <Links />
                 <SheetFooter>
                   <Button type="submit">Save changes</Button>
                 </SheetFooter>

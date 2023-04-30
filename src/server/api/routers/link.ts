@@ -8,7 +8,7 @@ import {
 } from "@/server/api/trpc";
 import type { ShortLinkInsert } from "@/server/drizzleDb";
 import { shortLink } from "@/server/drizzleDb";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 const generateSlug = () => {
@@ -126,7 +126,8 @@ export const linkRouter = createTRPCRouter({
     return ctx.db
       .select()
       .from(shortLink)
-      .where(eq(shortLink.userId, ctx.session.user.id));
+      .where(eq(shortLink.userId, ctx.session.user.id))
+      .orderBy(desc(shortLink.createdAt));
   }),
   deleteLink: protectedProcedure
     .input(z.object({ id: z.string() }))

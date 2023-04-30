@@ -10,6 +10,8 @@ const poppins = Poppins({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   style: ["normal", "italic"],
   subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
 });
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -17,12 +19,20 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <SessionProvider session={session}>
-      <main className={poppins.className}>
-        <Component {...pageProps} />
-        <Toaster />
-      </main>
-    </SessionProvider>
+    <>
+      <style jsx global>
+        {`
+	      :root {
+		      --font-sans: ${poppins.style.fontFamily};
+	      }}`}
+      </style>
+      <SessionProvider session={session}>
+        <main className={poppins.className}>
+          <Component {...pageProps} />
+          <Toaster />
+        </main>
+      </SessionProvider>
+    </>
   );
 };
 

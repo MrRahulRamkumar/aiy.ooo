@@ -82,4 +82,10 @@ export const linkRouter = createTRPCRouter({
 
       return createdShortLink;
     }),
+  getLinks: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db
+      .select()
+      .from(shortLink)
+      .where(eq(shortLink.userId, ctx.session.user.id));
+  }),
 });

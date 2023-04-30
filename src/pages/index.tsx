@@ -2,11 +2,11 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Mail } from "lucide-react";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, MoreVertical, Trash, Pencil } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
@@ -15,34 +15,166 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Label } from "@radix-ui/react-label";
-import { Separator } from "@radix-ui/react-separator";
+import { timeAgoFormatter } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 type Form = {
   slug: string;
   url: string;
 };
 
-const Links = () => {
-  const tags = Array.from({ length: 50 }).map(
-    (_, i, a) => `v1.2.0-beta.${a.length - i}`
-  );
+type SheetOptions = {
+  size: "lg" | "xl" | "default";
+  position: "right" | "bottom";
+};
+
+const EditDialog = () => {
   return (
-    <div className="p-4">
-      <h4 className="mb-4 text-sm font-medium leading-none">Tags</h4>
-      {tags.map((tag) => (
-        <React.Fragment>
-          <div className="text-sm" key={tag}>
-            {tag}
+    <Dialog>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit profile</DialogTitle>
+          <DialogDescription>
+            Make changes to your profile here. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
+            <Input id="name" value="Pedro Duarte" className="col-span-3" />
           </div>
-          <Separator className="my-2" />
-        </React.Fragment>
-      ))}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="username" className="text-right">
+              Username
+            </Label>
+            <Input id="username" value="@peduarte" className="col-span-3" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="submit">Save changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const SettingsMenu = () => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="m-0 p-2">
+          <MoreVertical />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuItem>
+          <Pencil className="mr-2 h-4 w-4" />
+          <span>Edit</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Trash className="mr-2 h-4 w-4 text-red-500" />
+          <span className="text-red-500">Delete</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+const LinkItem: React.FC<{ url: string; slug: string; createdAt: Date }> = ({
+  url,
+  slug,
+  createdAt,
+}) => {
+  return (
+    <>
+      <tr>
+        <td>
+          <div className="flex items-center space-x-3">
+            <p className="w-20 overflow-hidden truncate text-base font-medium">
+              {slug}
+            </p>
+          </div>
+        </td>
+        <td>
+          <div className="grid grid-cols-1 gap-2">
+            <div className="text-base opacity-50">
+              {timeAgoFormatter(createdAt)}
+            </div>
+          </div>
+        </td>
+        <th>
+          <SettingsMenu />
+        </th>
+      </tr>
+    </>
+  );
+};
+
+const Links = () => {
+  const { data: links, isLoading } = api.link.getLinks.useQuery();
+  console.log(links);
+
+  if (isLoading) {
+    return (
+      <div className="mt-6 flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  }
+
+  if (!links || links.length === 0) {
+    return (
+      <div className="mt-6">
+        <Alert>
+          <AlertTitle className="text-center">
+            aiyoo! You don't have any links yet.
+          </AlertTitle>
+          <AlertDescription className="mt-2 text-center">
+            Create a link to see it here.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6 grid">
+      <EditDialog />
+      <table className="table w-full border-separate border-spacing-y-4 overflow-y-auto">
+        <tbody>
+          {links.map((link) => {
+            return (
+              <LinkItem
+                key={link.id}
+                url={link.url}
+                createdAt={link.createdAt}
+                slug={link.slug}
+              />
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 };
@@ -54,6 +186,40 @@ const Home: NextPage = () => {
   const [createLinkLoading, setCreateLinkLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [linkCreated, setLinkCreated] = useState(false);
+  const [sheetOptions, setSheetOptions] = useState<SheetOptions>({
+    position: "right",
+    size: "lg",
+  });
+
+  const updateSheetOptions = (width: number) => {
+    if (width < 768) {
+      setSheetOptions({
+        position: "bottom",
+        size: "xl",
+      });
+    } else if (width < 1280) {
+      setSheetOptions({
+        position: "right",
+        size: "lg",
+      });
+    } else {
+      setSheetOptions({
+        position: "right",
+        size: "default",
+      });
+    }
+  };
+
+  useEffect(() => {
+    updateSheetOptions(window.innerWidth);
+  }, []);
+
+  // create an event listener
+  useEffect(() => {
+    window.addEventListener("resize", () =>
+      updateSheetOptions(window.innerWidth)
+    );
+  });
 
   const onSuccess = async (createdLink: ShortLink | undefined) => {
     if (!createdLink) return;
@@ -204,15 +370,16 @@ const Home: NextPage = () => {
               <SheetTrigger asChild>
                 <Button>View your Links</Button>
               </SheetTrigger>
-              <SheetContent position="bottom" size="xl">
+              <SheetContent
+                className="overflow-auto"
+                position={sheetOptions.position}
+                size={sheetOptions.size}
+              >
                 <SheetHeader>
                   <SheetTitle>Your links</SheetTitle>
                   <SheetDescription>View and edit your links</SheetDescription>
                 </SheetHeader>
                 <Links />
-                <SheetFooter>
-                  <Button type="submit">Save changes</Button>
-                </SheetFooter>
               </SheetContent>
             </Sheet>
             {!loginLoading && (

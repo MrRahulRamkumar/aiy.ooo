@@ -8,7 +8,7 @@ import {
 } from "@/server/api/trpc";
 import type { ShortLinkInsert } from "@/server/drizzleDb";
 import { shortLink } from "@/server/drizzleDb";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 const generateSlug = () => {
@@ -82,10 +82,62 @@ export const linkRouter = createTRPCRouter({
 
       return createdShortLink;
     }),
+  updateLink: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        url: z.string().url(),
+        slug: z.string().max(100),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (input.slug) {
+        const existingSlug = await ctx.db
+          .select()
+          .from(shortLink)
+          .where(eq(shortLink.slug, input.slug));
+        if (existingSlug.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Slug already exists.",
+          });
+        }
+      }
+
+      const slug = input.slug || generateSlug();
+      await ctx.db
+        .update(shortLink)
+        .set({ url: input.url, slug: slug })
+        .where(eq(shortLink.id, input.id));
+
+      const [updatedLink] = await ctx.db
+        .select()
+        .from(shortLink)
+        .where(
+          and(
+            eq(shortLink.id, input.id),
+            eq(shortLink.userId, ctx.session.user.id)
+          )
+        );
+
+      return updatedLink;
+    }),
   getLinks: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db
       .select()
       .from(shortLink)
       .where(eq(shortLink.userId, ctx.session.user.id));
   }),
+  deleteLink: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(({ input, ctx }) => {
+      return ctx.db
+        .delete(shortLink)
+        .where(
+          and(
+            eq(shortLink.id, input.id),
+            eq(shortLink.userId, ctx.session.user.id)
+          )
+        );
+    }),
 });

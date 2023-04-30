@@ -42,88 +42,228 @@ type Form = {
   url: string;
 };
 
+type EditForm = {
+  id: string;
+  slug: string;
+  url: string;
+};
+
 type SheetOptions = {
   size: "lg" | "xl" | "default";
   position: "right" | "bottom";
 };
 
-const EditDialog = () => {
+const DeleteLinkDialogContent: React.FC<{
+  link: ShortLink;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}> = ({ link, setOpen }) => {
+  const { toast } = useToast();
+  const { mutate: deleteLink, isLoading } = api.link.deleteLink.useMutation({
+    onSuccess: (data) => {
+      setOpen(false);
+      console.log(data);
+      toast({
+        variant: "default",
+        title: "hey yooo!",
+        description: "Link deleted successfully!",
+        action: <ToastAction altText="Okay">Okay</ToastAction>,
+      });
+    },
+    onError: (error) => {
+      console.log(error);
+      let description = "Something went wrong";
+      if (error.message && typeof error.message === "string") {
+        description = error.message;
+      }
+      toast({
+        variant: "destructive",
+        title: "aiyooo!",
+        description,
+        action: <ToastAction altText="Okay">Okay</ToastAction>,
+      });
+    },
+  });
+
   return (
-    <Dialog>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit profile</DialogTitle>
-          <DialogDescription>
-            {"Make changes to your profile here. Click save when you're done."}
-          </DialogDescription>
-        </DialogHeader>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Are you sure absolutely sure?</DialogTitle>
+        <DialogDescription>
+          This action cannot be undone. Are you sure you want to permanently
+          delete this link from our servers?
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <Button
+          disabled={isLoading}
+          className="w-24"
+          variant="destructive"
+          type="submit"
+          onClick={() => {
+            deleteLink({ id: link.id });
+          }}
+        >
+          {isLoading && <Loader2 className="mx-4 h-4 w-4 animate-spin" />}
+          {isLoading ? "" : "Confirm"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
+const EditLinkDialogContent: React.FC<{
+  link: ShortLink;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}> = ({ link, setOpen }) => {
+  const { toast } = useToast();
+  const { mutate: createLink, isLoading } = api.link.updateLink.useMutation({
+    onSuccess: (data) => {
+      setOpen(false);
+      console.log(data);
+      toast({
+        variant: "default",
+        title: "hey yooo!",
+        description: "Link saved successfully!",
+        action: <ToastAction altText="Okay">Okay</ToastAction>,
+      });
+    },
+    onError: (error) => {
+      console.log(error);
+      let description = "Something went wrong";
+      if (error.message && typeof error.message === "string") {
+        description = error.message;
+      }
+      toast({
+        variant: "destructive",
+        title: "aiyooo!",
+        description,
+        action: <ToastAction altText="Okay">Okay</ToastAction>,
+      });
+    },
+  });
+  const [editForm, setEditForm] = useState<EditForm>({
+    id: link.id,
+    url: link.url,
+    slug: link.slug,
+  });
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Edit link</DialogTitle>
+        <DialogDescription>
+          {"Make changes to your link here. Click save when you're done."}
+        </DialogDescription>
+      </DialogHeader>
+      <form
+        onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
+          event.preventDefault();
+          createLink(editForm);
+        }}
+      >
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
+            <Label htmlFor="url" className="text-right">
+              URL
             </Label>
-            <Input id="name" value="Pedro Duarte" className="col-span-3" />
+            <Input
+              id="url"
+              type="url"
+              value={editForm.url}
+              className="col-span-3"
+              onChange={(e) => {
+                setEditForm({
+                  ...editForm,
+                  url: e.target.value,
+                });
+              }}
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="username" className="text-right">
-              Username
+            <Label htmlFor="slug" className="text-right">
+              Slug
             </Label>
-            <Input id="username" value="@peduarte" className="col-span-3" />
+            <Input
+              id="slug"
+              value={editForm.slug}
+              className="col-span-3"
+              onChange={(e) => {
+                setEditForm({
+                  ...editForm,
+                  slug: e.target.value,
+                });
+              }}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button className="w-24" type="submit" disabled={isLoading}>
+            {isLoading && <Loader2 className="mx-4 h-4 w-4 animate-spin" />}
+            {isLoading ? "" : "Save"}
+          </Button>
         </DialogFooter>
-      </DialogContent>
+      </form>
+    </DialogContent>
+  );
+};
+
+const SettingsMenu: React.FC<{ link: ShortLink }> = ({ link }) => {
+  const [action, setAction] = useState<"edit" | "delete">("delete");
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="m-0 p-2">
+            <MoreVertical />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DialogTrigger asChild>
+            <DropdownMenuItem onClick={() => setAction("edit")}>
+              <Pencil className="mr-2 h-4 w-4" />
+              <span>Edit</span>
+            </DropdownMenuItem>
+          </DialogTrigger>
+          <DialogTrigger asChild>
+            <DropdownMenuItem onClick={() => setAction("delete")}>
+              <Trash className="mr-2 h-4 w-4 text-red-500" />
+              <span className="text-red-500">Delete</span>
+            </DropdownMenuItem>
+          </DialogTrigger>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {action === "edit" && (
+        <EditLinkDialogContent open={open} setOpen={setOpen} link={link} />
+      )}
+      {action === "delete" && (
+        <DeleteLinkDialogContent open={open} setOpen={setOpen} link={link} />
+      )}
     </Dialog>
   );
 };
 
-const SettingsMenu = () => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="m-0 p-2">
-          <MoreVertical />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuItem>
-          <Pencil className="mr-2 h-4 w-4" />
-          <span>Edit</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Trash className="mr-2 h-4 w-4 text-red-500" />
-          <span className="text-red-500">Delete</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
-const LinkItem: React.FC<{ url: string; slug: string; createdAt: Date }> = ({
-  slug,
-  createdAt,
-}) => {
+const LinkItem: React.FC<{ link: ShortLink }> = ({ link }) => {
   return (
     <>
       <tr>
         <td>
           <div className="flex items-center space-x-3">
             <p className="w-20 overflow-hidden truncate text-base font-medium">
-              {slug}
+              {link.slug}
             </p>
           </div>
         </td>
         <td>
           <div className="grid grid-cols-1 gap-2">
             <div className="text-base opacity-50">
-              {timeAgoFormatter(createdAt)}
+              {timeAgoFormatter(link.createdAt)}
             </div>
           </div>
         </td>
         <th>
-          <SettingsMenu />
+          <SettingsMenu link={link} />
         </th>
       </tr>
     </>
@@ -159,18 +299,10 @@ const Links = () => {
 
   return (
     <div className="mt-6 grid">
-      <EditDialog />
       <table className="table w-full border-separate border-spacing-y-4 overflow-y-auto">
         <tbody>
           {links.map((link) => {
-            return (
-              <LinkItem
-                key={link.id}
-                url={link.url}
-                createdAt={link.createdAt}
-                slug={link.slug}
-              />
-            );
+            return <LinkItem key={link.id} link={link} />;
           })}
         </tbody>
       </table>
@@ -189,7 +321,6 @@ const Home: NextPage = () => {
     position: "right",
     size: "lg",
   });
-
   const updateSheetOptions = (width: number) => {
     if (width < 768) {
       setSheetOptions({

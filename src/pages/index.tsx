@@ -5,16 +5,45 @@ import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { Mail } from "lucide-react";
+import { Mail, Sheet } from "lucide-react";
 import { Loader2, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import type { ShortLink } from "@/server/drizzleDb";
+import { Separator } from "@/components/ui/separator";
+import {
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
 
 type Form = {
   slug: string;
   url: string;
+};
+
+const Links = () => {
+  const tags = Array.from({ length: 50 }).map(
+    (_, i, a) => `v1.2.0-beta.${a.length - i}`
+  );
+  return (
+    <div className="p-4">
+      <h4 className="mb-4 text-sm font-medium leading-none">Tags</h4>
+      {tags.map((tag) => (
+        <React.Fragment>
+          <div className="text-sm" key={tag}>
+            {tag}
+          </div>
+          <Separator className="my-2" />
+        </React.Fragment>
+      ))}
+    </div>
+  );
 };
 
 const Home: NextPage = () => {
@@ -174,7 +203,45 @@ const Home: NextPage = () => {
         )}
         {status === "authenticated" && (
           <div className="mt-12 grid w-full max-w-sm items-center gap-3">
-            {/* <Button>View your Links</Button> */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button>Open sheet</Button>
+              </SheetTrigger>
+              <SheetContent position="bottom" size="xl">
+                <SheetHeader>
+                  <SheetTitle>Edit profile</SheetTitle>
+                  <SheetDescription>
+                    Make changes to your profile here. Click save when you're
+                    done.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Name
+                    </Label>
+                    <Input
+                      id="name"
+                      value="Pedro Duarte"
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                      Username
+                    </Label>
+                    <Input
+                      id="username"
+                      value="@peduarte"
+                      className="col-span-3"
+                    />
+                  </div>
+                </div>
+                <SheetFooter>
+                  <Button type="submit">Save changes</Button>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
             {!loginLoading && (
               <Button
                 variant="ghost"

@@ -10,7 +10,19 @@ import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import type { ShortLink } from "@/server/drizzleDb";
-import { LinkSheet } from "@/components/links";
+import dynamic from "next/dynamic";
+
+const LinkSheet = dynamic(
+  () => import("../components/links").then((mod) => mod.LinkSheet),
+  {
+    loading: () => (
+      <Button disabled>
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        Please Wait
+      </Button>
+    ),
+  }
+);
 
 type Form = {
   slug: string;

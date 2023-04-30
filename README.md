@@ -1,3 +1,5 @@
 # aiyooo
 
-A blazingly fast link shortener
+A blazingly fast link shortener.
+
+## [aiy.ooo](https://aiy.ooo)

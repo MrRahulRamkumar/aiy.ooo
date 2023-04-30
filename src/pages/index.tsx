@@ -54,7 +54,7 @@ const EditDialog = () => {
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
-            Make changes to your profile here. Click save when you're done.
+            {"Make changes to your profile here. Click save when you're done."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -102,7 +102,6 @@ const SettingsMenu = () => {
 };
 
 const LinkItem: React.FC<{ url: string; slug: string; createdAt: Date }> = ({
-  url,
   slug,
   createdAt,
 }) => {
@@ -148,10 +147,10 @@ const Links = () => {
       <div className="mt-6">
         <Alert>
           <AlertTitle className="text-center">
-            aiyoo! You don't have any links yet.
+            {"aiyoo! You don't have any links yet."}
           </AlertTitle>
           <AlertDescription className="mt-2 text-center">
-            Create a link to see it here.
+            Create a link to see it in here.
           </AlertDescription>
         </Alert>
       </div>

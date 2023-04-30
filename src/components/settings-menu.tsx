@@ -8,11 +8,14 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { MoreVertical, Pencil, Trash } from "lucide-react";
+import { MoreVertical, Pencil, Trash, Copy } from "lucide-react";
 import { EditLinkDialog } from "./dialogs/edit-link";
 import { DeleteLinkDialog } from "./dialogs/delete-link";
+import { ToastAction } from "./ui/toast";
+import { useToast } from "./ui/use-toast";
 
 export const SettingsMenu: React.FC<{ link: ShortLink }> = ({ link }) => {
+  const { toast } = useToast();
   const [action, setAction] = useState<"edit" | "delete">("delete");
   const [open, setOpen] = useState(false);
   return (
@@ -24,6 +27,20 @@ export const SettingsMenu: React.FC<{ link: ShortLink }> = ({ link }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
+          <DropdownMenuItem
+            onClick={() => {
+              const shortUrl = `https://aiy.ooo/${link.slug}`;
+              void navigator.clipboard.writeText(shortUrl);
+              toast({
+                title: "Hey yoo!",
+                description: "Link copied to clipboard!",
+                action: <ToastAction altText="Okay">Okay</ToastAction>,
+              });
+            }}
+          >
+            <Copy className="mr-2 h-4 w-4" />
+            <span>Copy</span>
+          </DropdownMenuItem>
           <DialogTrigger asChild>
             <DropdownMenuItem onClick={() => setAction("edit")}>
               <Pencil className="mr-2 h-4 w-4" />

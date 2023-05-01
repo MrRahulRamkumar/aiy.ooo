@@ -8,7 +8,7 @@ import {
 } from "@/server/api/trpc";
 import type { ShortLinkInsert } from "@/server/drizzleDb";
 import { shortLink } from "@/server/drizzleDb";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, not } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 const generateSlug = () => {
@@ -46,7 +46,14 @@ export const linkRouter = createTRPCRouter({
 
   createLinkWithSlug: protectedProcedure
     .input(
-      z.object({ url: z.string().url(), slug: z.string().max(100).optional() })
+      z.object({
+        url: z.string().url(),
+        slug: z
+          .string()
+          .max(100)
+          .transform((s) => s.trim())
+          .optional(),
+      })
     )
     .mutation(async ({ input, ctx }) => {
       const id = cuid();
@@ -87,7 +94,11 @@ export const linkRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         url: z.string().url(),
-        slug: z.string().max(100),
+        slug: z
+          .string()
+          .max(100)
+          .transform((s) => s.trim())
+          .optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -95,7 +106,9 @@ export const linkRouter = createTRPCRouter({
         const existingSlug = await ctx.db
           .select()
           .from(shortLink)
-          .where(eq(shortLink.slug, input.slug));
+          .where(
+            and(eq(shortLink.slug, input.slug), not(eq(shortLink.id, input.id)))
+          );
         if (existingSlug.length > 0) {
           throw new TRPCError({
             code: "BAD_REQUEST",

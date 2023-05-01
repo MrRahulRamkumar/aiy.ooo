@@ -87,7 +87,7 @@ export const EditLinkDialog: React.FC<{
               onChange={(e) => {
                 setEditForm({
                   ...editForm,
-                  url: e.target.value,
+                  url: e.target.value.trim(),
                 });
               }}
             />
@@ -103,7 +103,7 @@ export const EditLinkDialog: React.FC<{
               onChange={(e) => {
                 setEditForm({
                   ...editForm,
-                  slug: e.target.value,
+                  slug: e.target.value.trim(),
                 });
               }}
             />

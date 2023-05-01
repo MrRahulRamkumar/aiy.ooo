@@ -9,9 +9,10 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { Button } from "./ui/button";
-import { LinkItem } from "./link-item";
 import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
+import { timeAgoFormatter } from "@/lib/utils";
+import { SettingsMenu } from "./settings-menu";
 
 type SheetOptions = {
   size: "lg" | "xl" | "default";
@@ -45,13 +46,30 @@ const LinkList = () => {
 
   return (
     <div className="mt-6 grid">
-      <table className="table w-full border-separate border-spacing-y-4 overflow-y-auto">
-        <tbody>
-          {links.map((link) => {
-            return <LinkItem key={link.id} link={link} />;
-          })}
-        </tbody>
-      </table>
+      <ul role="list" className="divide-y">
+        {links.map((link) => (
+          <li key={link.id} className="flex justify-between gap-x-6 py-5">
+            <div className="flex gap-x-4">
+              <div className="min-w-0 flex-auto">
+                <p className="text-md w-52 overflow-hidden truncate font-bold leading-6 sm:w-80">
+                  {link.slug}
+                </p>
+                <p className="mt-1 w-52 overflow-hidden truncate text-xs leading-5 opacity-50 sm:w-80">
+                  {link.url}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="flex flex-row items-center justify-center">
+                <p className="mr-2 truncate text-ellipsis text-center text-sm font-medium leading-5 opacity-50">
+                  {timeAgoFormatter(link.createdAt)}
+                </p>
+                <SettingsMenu link={link} />
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
@@ -71,7 +89,7 @@ export const LinkSheet = () => {
     } else if (width < 1280) {
       setSheetOptions({
         position: "right",
-        size: "lg",
+        size: "xl",
       });
     } else {
       setSheetOptions({

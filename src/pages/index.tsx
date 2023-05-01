@@ -117,7 +117,7 @@ const Home: NextPage = () => {
                 onChange={(e) => {
                   setForm({
                     ...form,
-                    slug: e.target.value.toLowerCase(),
+                    slug: e.target.value.trim(),
                   });
                 }}
                 value={form.slug}
@@ -132,7 +132,7 @@ const Home: NextPage = () => {
                 onChange={(e) => {
                   setForm({
                     ...form,
-                    url: e.target.value.toLowerCase(),
+                    url: e.target.value.trim(),
                   });
                 }}
                 type="url"

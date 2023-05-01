@@ -94,7 +94,7 @@ export const LinkSheet = () => {
     } else {
       setSheetOptions({
         position: "right",
-        size: "default",
+        size: "xl",
       });
     }
   };

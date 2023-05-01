@@ -109,12 +109,14 @@ export const EditLinkDialog: React.FC<{
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button type="submit" disabled={isLoading} className="sm:w-24">
-            {isLoading && <Loader2 className="mx-4 h-4 w-4 animate-spin" />}
-            {isLoading ? "" : "Save"}
-          </Button>
-        </DialogFooter>
+        <div>
+          <DialogFooter>
+            <Button type="submit" disabled={isLoading} className="sm:w-24">
+              {isLoading && <Loader2 className="mx-4 h-4 w-4 animate-spin" />}
+              {isLoading ? "" : "Save"}
+            </Button>
+          </DialogFooter>
+        </div>
       </form>
     </DialogContent>
   );

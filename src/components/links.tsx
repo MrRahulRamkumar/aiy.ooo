@@ -51,10 +51,10 @@ const LinkList = () => {
           <li key={link.id} className="flex justify-between gap-x-6 py-5">
             <div className="flex gap-x-4">
               <div className="min-w-0 flex-auto">
-                <p className="text-md w-52 overflow-hidden truncate font-bold leading-6 sm:w-80">
+                <p className="text-md w-48 overflow-hidden truncate font-bold leading-6 sm:w-80">
                   {link.slug}
                 </p>
-                <p className="mt-1 w-52 overflow-hidden truncate text-xs leading-5 opacity-50 sm:w-80">
+                <p className="mt-1 w-48 overflow-hidden truncate text-xs leading-5 opacity-50 sm:w-80">
                   {link.url}
                 </p>
               </div>

@@ -26,22 +26,29 @@ export const linkRouter = createTRPCRouter({
   createLink: publicProcedure
     .input(z.object({ url: z.string().url() }))
     .mutation(async ({ input, ctx }) => {
-      const id = cuid();
+      try {
+        const id = cuid();
 
-      const newShortLink: ShortLinkInsert = {
-        id,
-        url: input.url,
-        slug: generateSlug(),
-      };
+        const newShortLink: ShortLinkInsert = {
+          id,
+          url: input.url,
+          slug: generateSlug(),
+        };
 
-      await ctx.db.insert(shortLink).values(newShortLink);
+        await ctx.db.insert(shortLink).values(newShortLink);
 
-      const [createdShortLink] = await ctx.db
-        .select()
-        .from(shortLink)
-        .where(eq(shortLink.id, id));
+        const [createdShortLink] = await ctx.db
+          .select()
+          .from(shortLink)
+          .where(eq(shortLink.id, id));
 
-      return createdShortLink;
+        return createdShortLink;
+      } catch (e) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong.",
+        });
+      }
     }),
 
   createLinkWithSlug: protectedProcedure
@@ -56,38 +63,44 @@ export const linkRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const id = cuid();
+      try {
+        const id = cuid();
 
-      if (input.slug) {
-        const existingSlug = await ctx.db
+        if (input.slug) {
+          const existingSlug = await ctx.db
+            .select()
+            .from(shortLink)
+            .where(eq(shortLink.slug, input.slug));
+          if (existingSlug.length > 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Slug already exists.",
+            });
+          }
+        }
+
+        const slug = input.slug || generateSlug();
+        const newShortLink: ShortLinkInsert = {
+          id,
+          url: input.url,
+          userId: ctx.session.user.id,
+          slug,
+        };
+
+        await ctx.db.insert(shortLink).values(newShortLink);
+
+        const [createdShortLink] = await ctx.db
           .select()
           .from(shortLink)
-          .where(eq(shortLink.slug, input.slug));
-        if (existingSlug.length > 0) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Slug already exists.",
-          });
-        }
+          .where(eq(shortLink.id, id));
+
+        return createdShortLink;
+      } catch (e) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong.",
+        });
       }
-
-      const slug = input.slug || generateSlug();
-      console.log("slug", slug);
-      const newShortLink: ShortLinkInsert = {
-        id,
-        url: input.url,
-        userId: ctx.session.user.id,
-        slug,
-      };
-
-      await ctx.db.insert(shortLink).values(newShortLink);
-
-      const [createdShortLink] = await ctx.db
-        .select()
-        .from(shortLink)
-        .where(eq(shortLink.id, id));
-
-      return createdShortLink;
     }),
   updateLink: protectedProcedure
     .input(
@@ -102,38 +115,49 @@ export const linkRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if (input.slug) {
-        const existingSlug = await ctx.db
+      try {
+        if (input.slug) {
+          const existingSlug = await ctx.db
+            .select()
+            .from(shortLink)
+            .where(
+              and(
+                eq(shortLink.slug, input.slug),
+                not(eq(shortLink.id, input.id))
+              )
+            );
+          if (existingSlug.length > 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Slug already exists.",
+            });
+          }
+        }
+
+        const slug = input.slug || generateSlug();
+        await ctx.db
+          .update(shortLink)
+          .set({ url: input.url, slug: slug })
+          .where(eq(shortLink.id, input.id));
+
+        const [updatedLink] = await ctx.db
           .select()
           .from(shortLink)
           .where(
-            and(eq(shortLink.slug, input.slug), not(eq(shortLink.id, input.id)))
+            and(
+              eq(shortLink.id, input.id),
+              eq(shortLink.userId, ctx.session.user.id)
+            )
           );
-        if (existingSlug.length > 0) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Slug already exists.",
-          });
-        }
+
+        return updatedLink;
+      } catch (e) {
+        console.error(e);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong.",
+        });
       }
-
-      const slug = input.slug || generateSlug();
-      await ctx.db
-        .update(shortLink)
-        .set({ url: input.url, slug: slug })
-        .where(eq(shortLink.id, input.id));
-
-      const [updatedLink] = await ctx.db
-        .select()
-        .from(shortLink)
-        .where(
-          and(
-            eq(shortLink.id, input.id),
-            eq(shortLink.userId, ctx.session.user.id)
-          )
-        );
-
-      return updatedLink;
     }),
   getLinks: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db
@@ -145,13 +169,21 @@ export const linkRouter = createTRPCRouter({
   deleteLink: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ input, ctx }) => {
-      return ctx.db
-        .delete(shortLink)
-        .where(
-          and(
-            eq(shortLink.id, input.id),
-            eq(shortLink.userId, ctx.session.user.id)
-          )
-        );
+      try {
+        return ctx.db
+          .delete(shortLink)
+          .where(
+            and(
+              eq(shortLink.id, input.id),
+              eq(shortLink.userId, ctx.session.user.id)
+            )
+          );
+      } catch (e) {
+        console.error(e);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong.",
+        });
+      }
     }),
 });

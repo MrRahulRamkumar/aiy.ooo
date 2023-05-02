@@ -48,10 +48,10 @@ export const DeleteLinkDialog: React.FC<{
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Are you sure absolutely sure?</DialogTitle>
+        <DialogTitle>Are you absolutely sure?</DialogTitle>
         <DialogDescription>
           This action cannot be undone. Are you sure you want to permanently
-          delete this link from our servers?
+          delete this link?
         </DialogDescription>
       </DialogHeader>
       <DialogFooter>

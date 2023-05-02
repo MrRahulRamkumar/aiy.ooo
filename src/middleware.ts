@@ -18,7 +18,9 @@ export default async function handler(
 ) {
   if (
     request.nextUrl.pathname === "/api/trpc/link.createLink" ||
-    request.nextUrl.pathname === "/api/trpc/link.createLinkWithSlug"
+    request.nextUrl.pathname === "/api/trpc/link.createLinkWithSlug" ||
+    request.nextUrl.pathname === "/api/trpc/link.deleteLink" ||
+    request.nextUrl.pathname === "/api/trpc/link.updateLink"
   ) {
     const ip = request.ip ?? "127.0.0.1";
 

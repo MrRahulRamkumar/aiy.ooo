@@ -112,14 +112,16 @@ const Home: NextPage = () => {
         >
           {status === "authenticated" && (
             <div className="mt-6 grid w-full max-w-sm items-center gap-1.5">
-              <p className="text-sm text-muted-foreground">{`https://aiy.ooo/${form.slug}`}</p>
+              <p className="text-sm max-w-sm overflow-hidden truncate text-muted-foreground">{`https://aiy.ooo/${form.slug}`}</p>
               <Input
+                className="max-w-sm"
                 onChange={(e) => {
                   setForm({
                     ...form,
                     slug: e.target.value.trim(),
                   });
                 }}
+                maxLength={100}
                 value={form.slug}
                 type="text"
                 id="text"

@@ -63,22 +63,21 @@ export const linkRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      if (input.slug) {
+        const existingSlug = await ctx.db
+          .select()
+          .from(shortLink)
+          .where(eq(shortLink.slug, input.slug));
+        if (existingSlug.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Slug already exists.",
+          });
+        }
+      }
+
       try {
         const id = cuid();
-
-        if (input.slug) {
-          const existingSlug = await ctx.db
-            .select()
-            .from(shortLink)
-            .where(eq(shortLink.slug, input.slug));
-          if (existingSlug.length > 0) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Slug already exists.",
-            });
-          }
-        }
-
         const slug = input.slug || generateSlug();
         const newShortLink: ShortLinkInsert = {
           id,

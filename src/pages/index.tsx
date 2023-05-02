@@ -5,12 +5,13 @@ import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { Loader2, Check } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import type { ShortLink } from "@/server/drizzleDb";
 import dynamic from "next/dynamic";
+import { DisplayLinkDialog } from "@/components/dialogs/display-link";
 
 const LinkSheet = dynamic(
   () => import("../components/links").then((mod) => mod.LinkSheet),
@@ -36,22 +37,14 @@ const Home: NextPage = () => {
   const [createLinkLoading, setCreateLinkLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [linkCreated, setLinkCreated] = useState(false);
+  const [shortUrl, setShortUrl] = useState("");
 
-  const onSuccess = async (createdLink: ShortLink | undefined) => {
+  const onSuccess = (createdLink: ShortLink | undefined) => {
     if (!createdLink) return;
 
-    const shortUrl = `https://aiy.ooo/${createdLink.slug}`;
-    await navigator.clipboard.writeText(shortUrl);
-    toast({
-      title: "Hey yoo!",
-      description: "Link copied to clipboard!",
-      action: <ToastAction altText="Okay">Okay</ToastAction>,
-    });
+    setShortUrl(`https://aiy.ooo/${createdLink.slug}`);
     setCreateLinkLoading(false);
     setLinkCreated(true);
-    setTimeout(() => {
-      setLinkCreated(false);
-    }, 2000);
     setForm({ slug: "", url: "" });
   };
 
@@ -87,6 +80,11 @@ const Home: NextPage = () => {
         <meta name="description" content="Ultra fast link shortener" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <DisplayLinkDialog
+        open={linkCreated}
+        setOpen={setLinkCreated}
+        shortUrl={shortUrl}
+      />
       <main className="mx-6 flex min-h-screen flex-col items-center justify-center">
         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
           aiyooo
@@ -112,7 +110,7 @@ const Home: NextPage = () => {
         >
           {status === "authenticated" && (
             <div className="mt-6 grid w-full max-w-sm items-center gap-1.5">
-              <p className="text-sm max-w-sm overflow-hidden truncate text-muted-foreground">{`https://aiy.ooo/${form.slug}`}</p>
+              <p className="max-w-sm overflow-hidden truncate text-sm text-muted-foreground">{`https://aiy.ooo/${form.slug}`}</p>
               <Input
                 className="max-w-sm"
                 onChange={(e) => {
@@ -143,12 +141,11 @@ const Home: NextPage = () => {
                 value={form.url}
                 placeholder="https://bing.com"
               />
-              <Button type="submit" disabled={createLinkLoading || linkCreated}>
+              <Button type="submit" disabled={createLinkLoading}>
                 {createLinkLoading && (
                   <Loader2 className="mx-4 h-4 w-4 animate-spin" />
                 )}
-                {linkCreated && <Check className="mx-4 h-4 w-4" />}
-                {createLinkLoading || linkCreated ? "" : "Create"}
+                {createLinkLoading ? "" : "Create"}
               </Button>
             </div>
           )}

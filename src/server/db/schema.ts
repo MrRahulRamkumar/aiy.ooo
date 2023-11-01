@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import {
-  bigint,
   index,
   int,
   mysqlTableCreator,
@@ -17,24 +16,28 @@ import { type AdapterAccount } from "next-auth/adapters";
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const mysqlTable = mysqlTableCreator((name) => `aiyooo_${name}`);
+export const mysqlTable = mysqlTableCreator((name) => `${name}`);
 
-export const posts = mysqlTable(
-  "post",
+export const shortLinks = mysqlTable(
+  "shortLink",
   {
-    id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("createdById", { length: 255 }).notNull(),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
+    id: varchar("id", { length: 191 }).notNull().primaryKey(),
+    createdAt: timestamp("createdAt", { mode: "date", fsp: 3 })
+      .default(sql`CURRENT_TIMESTAMP(3)`)
       .notNull(),
-    updatedAt: timestamp("updatedAt").onUpdateNow(),
+    url: varchar("url", { length: 3000 }).notNull(),
+    slug: varchar("slug", { length: 191 }).notNull(),
+    userId: varchar("userId", { length: 191 }),
   },
-  (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
+  (link) => ({
+    slugIdx: index("slug_idx").on(link.slug),
+    userIdIdx: index("userId_idx").on(link.userId),
   })
 );
+
+export const shortLinksRelations = relations(shortLinks, ({ one }) => ({
+  user: one(users, { fields: [shortLinks.userId], references: [users.id] }),
+}));
 
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
@@ -49,6 +52,7 @@ export const users = mysqlTable("user", {
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  shortLinks: many(shortLinks),
 }));
 
 export const accounts = mysqlTable(

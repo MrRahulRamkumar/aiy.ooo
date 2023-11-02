@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { headers } from "next/headers";
 import { GeistSans } from "geist/font";
 import { TRPCReactProvider } from "~/trpc/react";
+import { Toaster } from "~/components/ui/toaster";
 
 export const metadata = {
   title: "Create T3 App",
@@ -19,6 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${GeistSans.className}`}>
         <TRPCReactProvider headers={headers()}>{children}</TRPCReactProvider>
+        <Toaster />
       </body>
     </html>
   );

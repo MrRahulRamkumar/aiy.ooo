@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { InferInsertModel, relations, sql } from "drizzle-orm";
 import {
   index,
   int,
@@ -111,3 +111,5 @@ export const verificationTokens = mysqlTable(
     compoundKey: primaryKey(vt.identifier, vt.token),
   }),
 );
+
+export type ShortLink = InferInsertModel<typeof shortLinks>;

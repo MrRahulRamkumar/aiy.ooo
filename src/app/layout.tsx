@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { GeistSans } from "geist/font";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "~/components/ui/toaster";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata = {
   title: "Create T3 App",
@@ -19,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.className}`}>
-        <TRPCReactProvider headers={headers()}>{children}</TRPCReactProvider>
+        <SessionProvider>
+          <TRPCReactProvider headers={headers()}>{children}</TRPCReactProvider>
+        </SessionProvider>
         <Toaster />
       </body>
     </html>

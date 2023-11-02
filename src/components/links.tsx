@@ -9,7 +9,6 @@ import {
   SheetTrigger,
 } from "~/components/ui/sheet";
 import { Button } from "./ui/button";
-import { useEffect, useState } from "react";
 import { timeAgoFormatter } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { SettingsMenu } from "./settings-menu";
@@ -81,9 +80,8 @@ export const LinkSheet = () => {
         <Button>View your Links</Button>
       </SheetTrigger>
       <SheetContent
-              className="overflow-auto w-full"
-              side="bottom"
-
+        className="overflow-auto"
+        side="bottom"
       >
         <SheetHeader>
           <SheetTitle>Your links</SheetTitle>

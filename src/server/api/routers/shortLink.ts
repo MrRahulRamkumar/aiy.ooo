@@ -77,7 +77,7 @@ export const shortLinksRouter = createTRPCRouter({
 
       try {
         const id = createId();
-        const slug = input.slug ?? generateSlug();
+        const slug = input.slug || generateSlug();
         const newShortLink: ShortLinkInsert = {
           id,
           url: input.url,
@@ -132,7 +132,7 @@ export const shortLinksRouter = createTRPCRouter({
           }
         }
 
-        const slug = input.slug ?? generateSlug();
+        const slug = input.slug || generateSlug();
         await ctx.db
           .update(shortLinks)
           .set({ url: input.url, slug: slug })

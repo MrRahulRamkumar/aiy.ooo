@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { z } from "zod";
 import { createId } from "@paralleldrive/cuid2";
 import {

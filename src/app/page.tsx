@@ -12,7 +12,7 @@ import { api } from "~/trpc/react";
 import { useToast } from "~/components/ui/use-toast";
 import { ToastAction } from "~/components/ui/toast";
 import dynamic from "next/dynamic";
-import { ShortLink } from "~/server/db/schema";
+import { type ShortLink } from "~/server/db/schema";
 import { DisplayLinkDialog } from "~/components/dialogs/display-link";
 
 const LinkSheet = dynamic(
@@ -24,7 +24,7 @@ const LinkSheet = dynamic(
         Please Wait
       </Button>
     ),
-  }
+  },
 );
 
 type Form = {

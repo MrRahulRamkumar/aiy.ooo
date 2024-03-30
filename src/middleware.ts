@@ -54,8 +54,6 @@ export default async function handler(
     .from(shortLinks)
     .where(eq(shortLinks.slug, slug));
 
-  console.log(data)
-
   if (!data) {
     return NextResponse.redirect(request.nextUrl.origin);
   }

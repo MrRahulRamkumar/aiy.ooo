@@ -1,9 +1,11 @@
 import {
-  timestamp,
+timestamp,
   text,
   primaryKey,
  integer,
- pgTableCreator
+ pgTableCreator,
+ index,
+ uniqueIndex
 } from "drizzle-orm/pg-core"
 import type { AdapterAccount } from '@auth/core/adapters'
 import { type InferInsertModel, type InferSelectModel } from "drizzle-orm";
@@ -62,12 +64,19 @@ export const verificationTokens = projectTable(
  })
 )
 
-export const shortLinks = projectTable("shortLink", {
-  id: text("id").primaryKey(),
-  url: text("url").notNull(),
-  slug: text("slug").notNull(),
-  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
-  userId: text("userId").references(() => users.id),
-});
+export const shortLinks = projectTable(
+  "shortLink",
+  {
+    id: text("id").primaryKey(),
+    url: text("url").notNull(),
+    slug: text("slug").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+    userId: text("userId").references(() => users.id),
+  },
+  (shortLinks) => ({
+    slugIdx: uniqueIndex("short-link_shortLink_slug_idx").on(shortLinks.slug),
+    userIdIdx: index("short-link_shortLink_userId_idx").on(shortLinks.userId),
+  }),
+);
 export type SelectShortLink = InferSelectModel<typeof shortLinks>;
 export type InsertShortLink = InferInsertModel<typeof shortLinks>;

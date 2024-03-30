@@ -10,14 +10,8 @@ import {
 } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { api } from "@/lib/api";
-import { useEffect, useState } from "react";
 import { timeAgoFormatter } from "@/lib/utils";
 import { SettingsMenu } from "./settings-menu";
-
-type SheetOptions = {
-  size: "lg" | "xl" | "default";
-  position: "right" | "bottom";
-};
 
 const LinkList = () => {
   const { data: links, isLoading } = api.link.getLinks.useQuery();
@@ -75,34 +69,6 @@ const LinkList = () => {
 };
 
 export const LinkSheet = () => {
-  const [sheetOptions, setSheetOptions] = useState<SheetOptions>({
-    position: "right",
-    size: "lg",
-  });
-
-  const updateSheetOptions = (width: number) => {
-    if (width < 768) {
-      setSheetOptions({
-        position: "bottom",
-        size: "xl",
-      });
-    } else if (width < 1280) {
-      setSheetOptions({
-        position: "right",
-        size: "xl",
-      });
-    } else {
-      setSheetOptions({
-        position: "right",
-        size: "xl",
-      });
-    }
-  };
-
-  useEffect(() => {
-    updateSheetOptions(window.innerWidth);
-  }, []);
-
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -110,8 +76,6 @@ export const LinkSheet = () => {
       </SheetTrigger>
       <SheetContent
         className="overflow-auto"
-        position={sheetOptions.position}
-        size={sheetOptions.size}
       >
         <SheetHeader>
           <SheetTitle>Your links</SheetTitle>

@@ -1,4 +1,4 @@
-import type { ShortLink } from "@/server/drizzleDb";
+import type { InsertShortLink } from "@/server/db/schema";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import { ToastAction } from "../ui/toast";
@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 
 export const DeleteLinkDialog: React.FC<{
-  link: ShortLink;
+  link: InsertShortLink;
   open: boolean;
   setOpen: (open: boolean) => void;
 }> = ({ link, setOpen }) => {

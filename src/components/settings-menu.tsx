@@ -1,4 +1,4 @@
-import type { ShortLink } from "@/server/drizzleDb";
+import type { InsertShortLink } from "@/server/db/schema";
 import { useState } from "react";
 import { Dialog, DialogTrigger } from "./ui/dialog";
 import {
@@ -14,7 +14,7 @@ import { DeleteLinkDialog } from "./dialogs/delete-link";
 import { ToastAction } from "./ui/toast";
 import { useToast } from "./ui/use-toast";
 
-export const SettingsMenu: React.FC<{ link: ShortLink }> = ({ link }) => {
+export const SettingsMenu: React.FC<{ link: InsertShortLink }> = ({ link }) => {
   const { toast } = useToast();
   const [action, setAction] = useState<"edit" | "delete">("delete");
   const [open, setOpen] = useState(false);

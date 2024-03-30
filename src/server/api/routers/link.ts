@@ -6,8 +6,8 @@ import {
   publicProcedure,
   protectedProcedure,
 } from "@/server/api/trpc";
-import type { ShortLinkInsert } from "@/server/drizzleDb";
-import { shortLink } from "@/server/drizzleDb";
+import type { InsertShortLink } from "@/server/db/schema";
+import { shortLinks } from "@/server/db/schema";
 import { eq, and, desc, not } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
@@ -29,18 +29,18 @@ export const linkRouter = createTRPCRouter({
       try {
         const id = cuid();
 
-        const newShortLink: ShortLinkInsert = {
+        const newShortLink: InsertShortLink = {
           id,
           url: input.url,
           slug: generateSlug(),
         };
 
-        await ctx.db.insert(shortLink).values(newShortLink);
+        await ctx.db.insert(shortLinks).values(newShortLink);
 
         const [createdShortLink] = await ctx.db
           .select()
-          .from(shortLink)
-          .where(eq(shortLink.id, id));
+          .from(shortLinks)
+          .where(eq(shortLinks.id, id));
 
         return createdShortLink;
       } catch (e) {
@@ -66,8 +66,8 @@ export const linkRouter = createTRPCRouter({
       if (input.slug) {
         const existingSlug = await ctx.db
           .select()
-          .from(shortLink)
-          .where(eq(shortLink.slug, input.slug));
+          .from(shortLinks)
+          .where(eq(shortLinks.slug, input.slug));
         if (existingSlug.length > 0) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -79,19 +79,19 @@ export const linkRouter = createTRPCRouter({
       try {
         const id = cuid();
         const slug = input.slug || generateSlug();
-        const newShortLink: ShortLinkInsert = {
+        const newShortLink: InsertShortLink = {
           id,
           url: input.url,
           userId: ctx.session.user.id,
           slug,
         };
 
-        await ctx.db.insert(shortLink).values(newShortLink);
+        await ctx.db.insert(shortLinks).values(newShortLink);
 
         const [createdShortLink] = await ctx.db
           .select()
-          .from(shortLink)
-          .where(eq(shortLink.id, id));
+          .from(shortLinks)
+          .where(eq(shortLinks.id, id));
 
         return createdShortLink;
       } catch (e) {
@@ -118,11 +118,11 @@ export const linkRouter = createTRPCRouter({
         if (input.slug) {
           const existingSlug = await ctx.db
             .select()
-            .from(shortLink)
+            .from(shortLinks)
             .where(
               and(
-                eq(shortLink.slug, input.slug),
-                not(eq(shortLink.id, input.id))
+                eq(shortLinks.slug, input.slug),
+                not(eq(shortLinks.id, input.id))
               )
             );
           if (existingSlug.length > 0) {
@@ -135,17 +135,17 @@ export const linkRouter = createTRPCRouter({
 
         const slug = input.slug || generateSlug();
         await ctx.db
-          .update(shortLink)
+          .update(shortLinks)
           .set({ url: input.url, slug: slug })
-          .where(eq(shortLink.id, input.id));
+          .where(eq(shortLinks.id, input.id));
 
         const [updatedLink] = await ctx.db
           .select()
-          .from(shortLink)
+          .from(shortLinks)
           .where(
             and(
-              eq(shortLink.id, input.id),
-              eq(shortLink.userId, ctx.session.user.id)
+              eq(shortLinks.id, input.id),
+              eq(shortLinks.userId, ctx.session.user.id)
             )
           );
 
@@ -161,20 +161,20 @@ export const linkRouter = createTRPCRouter({
   getLinks: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db
       .select()
-      .from(shortLink)
-      .where(eq(shortLink.userId, ctx.session.user.id))
-      .orderBy(desc(shortLink.createdAt));
+      .from(shortLinks)
+      .where(eq(shortLinks.userId, ctx.session.user.id))
+      .orderBy(desc(shortLinks.createdAt));
   }),
   deleteLink: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ input, ctx }) => {
       try {
         return ctx.db
-          .delete(shortLink)
+          .delete(shortLinks)
           .where(
             and(
-              eq(shortLink.id, input.id),
-              eq(shortLink.userId, ctx.session.user.id)
+              eq(shortLinks.id, input.id),
+              eq(shortLinks.userId, ctx.session.user.id)
             )
           );
       } catch (e) {

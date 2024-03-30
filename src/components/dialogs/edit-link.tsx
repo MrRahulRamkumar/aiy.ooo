@@ -12,7 +12,7 @@ import {
 import { Input } from "../ui/input";
 import { useToast } from "../ui/use-toast";
 import { ToastAction } from "../ui/toast";
-import type { ShortLink } from "@/server/drizzleDb";
+import type { InsertShortLink } from "@/server/db/schema";
 import { Label } from "../ui/label";
 
 type EditForm = {
@@ -22,7 +22,7 @@ type EditForm = {
 };
 
 export const EditLinkDialog: React.FC<{
-  link: ShortLink;
+  link: InsertShortLink;
   open: boolean;
   setOpen: (open: boolean) => void;
 }> = ({ link, setOpen }) => {

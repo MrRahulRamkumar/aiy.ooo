@@ -1,4 +1,5 @@
-import { db, shortLink } from "@/server/drizzleDb";
+import { db } from "@/server/db";
+import { shortLinks } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import type { NextRequest, NextFetchEvent } from "next/server";
@@ -50,8 +51,10 @@ export default async function handler(
 
   const [data] = await db
     .select()
-    .from(shortLink)
-    .where(eq(shortLink.slug, slug));
+    .from(shortLinks)
+    .where(eq(shortLinks.slug, slug));
+
+  console.log(data)
 
   if (!data) {
     return NextResponse.redirect(request.nextUrl.origin);

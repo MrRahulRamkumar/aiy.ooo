@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import type { ShortLink } from "@/server/drizzleDb";
+import type { InsertShortLink } from "@/server/db/schema";
 import dynamic from "next/dynamic";
 import { DisplayLinkDialog } from "@/components/dialogs/display-link";
 
@@ -39,7 +39,7 @@ const Home: NextPage = () => {
   const [linkCreated, setLinkCreated] = useState(false);
   const [shortUrl, setShortUrl] = useState("");
 
-  const onSuccess = (createdLink: ShortLink | undefined) => {
+  const onSuccess = (createdLink: InsertShortLink | undefined) => {
     if (!createdLink) return;
 
     setShortUrl(`https://aiy.ooo/${createdLink.slug}`);

@@ -27,10 +27,12 @@ export default function TermsAndConditions() {
         <section className="space-y-4">
           <p>
             These Terms and Conditions, along with privacy policy or other terms
-            ("Terms") constitute a binding agreement by and between RAHUL
-            RAMKUMAR, ("Website Owner" or "we" or "us" or "our") and you ("you"
-            or "your") and relate to your use of our website, goods (as
-            applicable) or services (as applicable) (collectively, "Services").
+            (&ldquo;Terms&rdquo;) constitute a binding agreement by and between
+            RAHUL RAMKUMAR, (&ldquo;Website Owner&rdquo; or &ldquo;we&rdquo; or
+            &ldquo;us&rdquo; or &ldquo;our&rdquo;) and you (&ldquo;you&rdquo; or
+            &ldquo;your&rdquo;) and relate to your use of our website, goods (as
+            applicable) or services (as applicable) (collectively,
+            &ldquo;Services&rdquo;).
           </p>
           <p>
             By using our website and availing the Services, you agree that you

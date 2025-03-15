@@ -62,7 +62,7 @@ export default function RefundPolicy() {
             <li>
               In case of complaints regarding products that come with a warranty
               from manufacturers, please refer the issue to them. In case of any
-              Refunds approved by the RAHUL RAMKUMAR, it'll take 3-5 Days days
+              Refunds approved by the RAHUL RAMKUMAR, it will take 3-5 Days days
               for the refund to be processed to the end customer.
             </li>
           </ul>
